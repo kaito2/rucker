@@ -591,3 +591,121 @@ ip netns del netns_"$uuid"
 ---
 
 以上でコンテナのライフサイクルが終了!! 長かった!!!
+
+
+## bocker_pull
+
+```bash
+function bocker_pull() { #HELP Pull an image from Docker Hub:\nBOCKER pull <name> <tag>
+	token="$(curl -sL -o /dev/null -D- -H 'X-Docker-Token: true' "https://index.docker.io/v1/repositories/$1/images" | tr -d '\r' | awk -F ': *' '$1 == "X-Docker-Token" { print $2 }')"
+	registry='https://registry-1.docker.io/v1'
+	id="$(curl -sL -H "Authorization: Token $token" "$registry/repositories/$1/tags/$2" | sed 's/"//g')"
+	[[ "${#id}" -ne 64 ]] && echo "No image named '$1:$2' exists" && exit 1
+	ancestry="$(curl -sL -H "Authorization: Token $token" "$registry/images/$id/ancestry")"
+	IFS=',' && ancestry=(${ancestry//[\[\] \"]/}) && IFS=' \n\t'; tmp_uuid="$(uuidgen)" && mkdir /tmp/"$tmp_uuid"
+	for id in "${ancestry[@]}"; do
+		curl -#L -H "Authorization: Token $token" "$registry/images/$id/layer" -o /tmp/"$tmp_uuid"/layer.tar
+		tar xf /tmp/"$tmp_uuid"/layer.tar -C /tmp/"$tmp_uuid" && rm /tmp/"$tmp_uuid"/layer.tar
+	done
+	echo "$1:$2" > /tmp/"$tmp_uuid"/img.source
+	bocker_init /tmp/"$tmp_uuid" && rm -rf /tmp/"$tmp_uuid"
+}
+```
+
+---
+
+```bash
+token="$(curl -sL -o /dev/null -D- -H 'X-Docker-Token: true' "https://index.docker.io/v1/repositories/$1/images" | tr -d '\r' | awk -F ': *' '$1 == "X-Docker-Token" { print $2 }')"
+```
+
+順に読み解く…
+
+まずは `curl` 部分
+
+```bash
+curl -sL -o /dev/null -D- -H 'X-Docker-Token: true' "https://index.docker.io/v1/repositories/$1/images"
+```
+
+オプションは以下の通り
+
+- `-s`: 進行状況やエラーメッセージを出力しない
+- `-L`: リダイレクト対応
+- `-o /dev/null`: 標準出力に出力されるレスポンスボディを `/dev/null` に向けることで破棄する
+- `-D-`: `-D` オプションに `-` を渡すことでヘッダーのダンプ先を標準出力に向けている
+  - [ハイフンを使った便利な標準入出力指定でのコマンドライン - Qiita](https://qiita.com/bami3/items/d67152d19aa8ac2d47de)
+- `-H 'X-Docker-Token: true'`: ヘッダー付与
+
+… と思ったらこの docker hub の REST API v1 は deprecated になっていた…
+
+修正のPRを出している人がいたのでコレをベースに解読していく。
+
+[Fix image pulling by huazhihao · Pull Request #27 · p8952/bocker · GitHub](https://github.com/p8952/bocker/pull/27/files)
+
+```bash
+function bocker_pull() { #HELP Pull an image from Docker Hub:\nBOCKER pull <name> <tag>
+	tmp_uuid="$(uuidgen)" && mkdir /tmp/"$tmp_uuid"
+	download-frozen-image-v2 /tmp/"$tmp_uuid" "$1:$2" > /dev/null
+	rm -rf /tmp/"$tmp_uuid"/repositories
+	for tar in "$(jq '.[].Layers[]' --raw-output < /tmp/$tmp_uuid/manifest.json)"; do
+		tar xf /tmp/"$tmp_uuid"/$tar -C /tmp/"$tmp_uuid" && rm -rf /tmp/"$tmp_uuid"/$tar
+	done
+	for config in "$(jq '.[].Config' --raw-output < /tmp/$tmp_uuid/manifest.json)"; do
+		rm -f /tmp/"$tmp_uuid"/$config
+	done
+	echo "$1:$2" > /tmp/"$tmp_uuid"/img.source
+	bocker_init /tmp/"$tmp_uuid" && rm -rf /tmp/"$tmp_uuid"
+}
+```
+
+コマンドは以下のようよ呼ばれたと仮定、
+
+```bash
+bocker pull centos 7
+```
+
+---
+
+```bash
+tmp_uuid="$(uuidgen)" && mkdir /tmp/"$tmp_uuid"
+```
+
+ここは大丈夫そう
+
+---
+
+```bash
+download-frozen-image-v2 /tmp/"$tmp_uuid" "$1:$2" > /dev/null
+```
+
+問題の `download-frozen-image-v2` スクリプト。
+一旦中身はブラックボックスとするので挙動だけ確認する。
+（TODO: 中身調査）
+
+```
+download-frozen-image-v2 dir image[:tag][@digest] ...
+```
+
+とのことなので、
+
+`centos:7` イメージを `/tmp/$tmp_uuid` ディレクトリにダウンロードしてくる。
+（出力は `/dev/null` に破棄）
+
+---
+
+```bash
+rm -rf /tmp/"$tmp_uuid"/repositories
+```
+
+使わない部分を削除?
+（TODO: 調査）
+
+---
+
+```bash
+for tar in "$(jq '.[].Layers[]' --raw-output < /tmp/$tmp_uuid/manifest.json)"; do
+	tar xf /tmp/"$tmp_uuid"/$tar -C /tmp/"$tmp_uuid" && rm -rf /tmp/"$tmp_uuid"/$tar
+done
+```
+
+こいつは本体を見ないとわからないな…
+（TODO: vagrant 環境の用意）
