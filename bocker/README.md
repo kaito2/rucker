@@ -709,3 +709,5 @@ done
 
 こいつは本体を見ないとわからないな…
 （TODO: vagrant 環境の用意）
+
+[Ansible - Short Introduction | Vagrant by HashiCorp](https://www.vagrantup.com/docs/provisioning/ansible_intro)

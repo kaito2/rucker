@@ -1,0 +1,18 @@
+---
+- hosts: all
+  tasks:
+    - name: install epel-release
+      yum:
+        name:
+          - epel-release
+          - jq
+          - autoconf
+          - automake
+          - btrfs-progs
+          - docker
+          - gettext-devel
+          - git
+          - libcgroup-tools
+          - libtool
+          - python-pip
+          - golang
