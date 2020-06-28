@@ -197,3 +197,117 @@ mount -o loop ~/btrfs.img /var/bocker
 - `mkfs.btrfs` の引数はファイルでよくて、ファイルの場合はよしなに読み替えてくれる。
 - virtual device は mount 時に必要になったタイミングで 作成される。
   - 🤔 < それまでは ファイルシステムが構築されたファイル? という状態になるのか?
+
+---
+
+```bash
+pip install git+https://github.com/larsks/undocker
+```
+
+[GitHub - larsks/undocker](https://github.com/larsks/undocker) をインストール
+
+Docker image をファイルに展開し直すパッケージっぽい
+
+---
+
+```bash
+docker pull centos
+docker save centos | undocker -o base-image
+```
+
+- `docker pull` でイメージを取得
+- `docker save` で tar 化されたレポジトリを標準出力のストリームに出力
+- `undocker` コマンドで `base-image` というディレクトリ名で保存
+
+[save — Docker-docs-ja 17.06 ドキュメント](http://docs.docker.jp/engine/reference/commandline/save.html)
+
+---
+
+```bash
+git clone https://github.com/karelzak/util-linux.git
+cd util-linux
+git checkout tags/v2.25.2
+./autogen.sh
+./configure --without-ncurses --without-python
+make
+mv unshare /usr/bin/unshare
+cd ..
+```
+
+`unshare` コマンドをインストールするために `linux-util` をビルド
+
+---
+
+[GitHub - moby/moby: Moby Project - a collaborative project for the container ecosystem to assemble container-based systems](https://github.com/moby/moby)ディレクトリから `download-frozen-image-v2.sh` をコピーし、実行権限を付与
+
+(オリジナルの bocker が使用している docker hub の api の v1 が非推奨になり、こちらのスクリプトが提供されている)
+
+TODO: `download-frozen-image-v2.sh` の中身を読む
+
+```bash
+curl -sL https://raw.githubusercontent.com/moby/moby/master/contrib/download-frozen-image-v2.sh -o /usr/bin/download-frozen-image-v2
+chmod +x /usr/bin/download-frozen-image-v2
+```
+
+---
+
+```bash
+ln -s /vagrant/bocker /usr/bin/bocker
+```
+
+シンボリックリンク。いつ使うのか…
+
+---
+
+IP フォワードを有効にする。
+
+[IP フォワードを利用したい - ITmedia エンタープライズ](https://www.itmedia.co.jp/help/tips/linux/l0097.html)
+
+TODO: 無効にするとどうなるのか調査
+
+```bash
+echo 1 > /proc/sys/net/ipv4/ip_forward
+```
+
+---
+
+```
+iptables --flush
+```
+
+IP テーブルの内容をすべて破棄
+
+> To flush all chains, which will delete all of the firewall rules, you may use the -F, or the equivalent --flush, option by itself:
+
+[How To List and Delete Iptables Firewall Rules | DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-list-and-delete-iptables-firewall-rules)
+
+---
+
+```bash
+iptables -t nat -A POSTROUTING -o bridge0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE
+```
+
+そもそも NAT って… => [NAT - ネットワークエンジニアを目指して](https://www.itbook.info/study/nat3.html)
+
+`POSTROUTING` は private IP => global IP の変換する設定らしい。
+
+![](https://image.itmedia.co.jp/ait/articles/0111/23/r5lsz03.gif)
+
+[Linux で作るファイアウォール［NAT 設定編］ (2/2)：ゼロから始める Linux セキュリティ（4） - ＠IT](https://www.atmarkit.co.jp/ait/articles/0111/23/news003_2.html#:~:text=POSTROUTING%E3%83%81%E3%82%A7%E3%82%A4%E3%83%B3%E3%81%AF%E9%80%81%E4%BF%A1%E5%85%83,%E5%BF%85%E8%A6%81%E3%81%8C%E3%81%82%E3%82%8B%E3%81%AE%E3%81%A7%E3%81%99%E3%80%82)
+
+`-j MASQUERADE` は IP マスカレードを使用する。つまり、NAPT になるということ?
+
+[nat テーブルを利用した Linux ルータの作成 (2/6)：習うより慣れろ！ iptables テンプレート集（2） - ＠IT](https://www.atmarkit.co.jp/ait/articles/0505/17/news131_2.html)
+
+NAPT って… => [NAPT(IP マスカレード) - ネットワークエンジニアを目指して](https://www.itbook.info/study/nat4.html)
+
+---
+
+```bash
+ip link add bridge0 type bridge
+ip addr add 10.0.0.1/24 dev bridge0
+ip link set bridge0 up
+```
+
+コンテナの `veth` が接続するための `bridge0` ブリッジを作成し、IP アドレス `10.0.0.1/24` を付与した後に起動する。
