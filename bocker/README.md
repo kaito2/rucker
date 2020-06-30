@@ -2,6 +2,10 @@
 
 もととなる [p8952/bocker](https://github.com/p8952/bocker) を解読する。
 
+## 参考になる記事
+
+- [【連載】世界一わかりみが深いコンテナ & Docker 入門 〜 その 5:Docker のネットワークってどうなってるの？ 〜 \| SIOS Tech. Lab](https://tech-lab.sios.jp/archives/20179) - ネームスペースとか仮想 NIC とかをわかりやすい解説している
+
 ## `bocker_run`
 
 [bocker_run - p8952/bocker](https://github.com/p8952/bocker/blob/master/bocker#L61)
@@ -73,7 +77,7 @@ $ shuf -i 42002-42254 -n 1
 `$1` （例だと `img_42150` に相当） を `bocker_check` に渡してイメージが有るかを確認。
 （`bocker_check` の挙動は一旦スキップ TODO: ）
 
-`&&` でつながっているので1つ目の `[[ "$(bocker_check "$1")" == 1 ]]` が偽の場合に次の `echo "No image named '$1' exists"` と `exit 1` が評価される。
+`&&` でつながっているので 1 つ目の `[[ "$(bocker_check "$1")" == 1 ]]` が偽の場合に次の `echo "No image named '$1' exists"` と `exit 1` が評価される。
 
 ---
 
@@ -89,12 +93,12 @@ $ shuf -i 42002-42254 -n 1
 cmd="${@:2}" && ip="$(echo "${uuid: -3}" | sed 's/0//g')" && mac="${uuid: -3:1}:${uuid: -2}"
 ```
 
-- `${@:2}` は引数の3個め以降をすべてを表す。詳しくは[Stack Overflow](https://unix.stackexchange.com/a/92981)を参照。
-- `$(echo "${uuid: -3}" | sed 's/0//g')` は `uuid` の後ろ3文字から `0` をのぞいたもの。
+- `${@:2}` は引数の 3 個め以降をすべてを表す。詳しくは[Stack Overflow](https://unix.stackexchange.com/a/92981)を参照。
+- `$(echo "${uuid: -3}" | sed 's/0//g')` は `uuid` の後ろ 3 文字から `0` をのぞいたもの。
 
-`${uuid: -3:1}` は `uuid` の後ろから3番めから1文字。
+`${uuid: -3:1}` は `uuid` の後ろから 3 番めから 1 文字。
 
-`${uuid: -2}` は `uuid` の後ろから2文字
+`${uuid: -2}` は `uuid` の後ろから 2 文字
 
 e.g.
 
@@ -116,7 +120,7 @@ $ echo "${uuid: -3:3}"
 ip link add dev veth0_"$uuid" type veth peer name veth1_"$uuid"
 ```
 
-2つの口を持つインタフェースを作成するらしい（TODO: 詳しく調査）
+2 つの口を持つインタフェースを作成するらしい（TODO: 詳しく調査）
 
 ---
 
@@ -126,7 +130,7 @@ ip link set dev veth0_"$uuid" up
 
 > ネットワークデバイスを起動するには「ip link set デバイス名 up」、停止するには「ip link set デバイス名 down」のように指定します
 
-[【 ip 】コマンド（基礎編2）――ネットワークデバイスの状態を表示する／変更する](https://www.atmarkit.co.jp/ait/articles/1709/28/news029.html#sample3)
+[【 ip 】コマンド（基礎編 2）――ネットワークデバイスの状態を表示する／変更する](https://www.atmarkit.co.jp/ait/articles/1709/28/news029.html#sample3)
 
 なるほど
 
@@ -161,7 +165,7 @@ ip netns exec netns_"$uuid" ip link set dev lo up
 ```
 
 `ip netns exec netns_"$uuid"` をプレフィックスにつけることで、`netns_$uuid` ネームスペースでコマンドを実行できる。
-[ip netnsコマンドの使い方（ネットワークの実験の幅が広がるなぁ～） - Qiita](https://qiita.com/hana_shin/items/ab078b5552f5df029030#8-%E6%8C%87%E5%AE%9A%E3%81%97%E3%81%9F%E3%83%8D%E3%83%BC%E3%83%A0%E3%82%B9%E3%83%9A%E3%83%BC%E3%82%B9%E3%81%A7%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95exec)
+[ip netns コマンドの使い方（ネットワークの実験の幅が広がるなぁ～） - Qiita](https://qiita.com/hana_shin/items/ab078b5552f5df029030#8-%E6%8C%87%E5%AE%9A%E3%81%97%E3%81%9F%E3%83%8D%E3%83%BC%E3%83%A0%E3%82%B9%E3%83%9A%E3%83%BC%E3%82%B9%E3%81%A7%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95exec)
 
 なので `netns_"$uuid"` ネームスペース内で以下のコマンドを実行したことににある。
 
@@ -169,8 +173,8 @@ ip netns exec netns_"$uuid" ip link set dev lo up
 ip link set dev lo up
 ```
 
-> netnsを作成したばかりの段階では、loopbackアドレスすらDOWN状態になっています。
-[Docker/Kubernetesを扱う上で必要なネットワークの基礎知識（その２） - sagantaf](http://sagantaf.hatenablog.com/entry/2019/12/14/000948)
+> netns を作成したばかりの段階では、loopback アドレスすら DOWN 状態になっています。
+> [Docker/Kubernetes を扱う上で必要なネットワークの基礎知識（その２） - sagantaf](http://sagantaf.hatenablog.com/entry/2019/12/14/000948)
 
 らしいので `lo` を指定して loopback アドレスをリンクアップしている。
 
@@ -196,9 +200,9 @@ $ echo 02:42:ac:11:00"$mac"
 02:42:ac:11:000:32
 ```
 
-TODO: validなMACアドレスか確認
+TODO: valid な MAC アドレスか確認
 
-なので `veth1_"$uuid"` にMACアドレス `02:42:ac:11:000:32` が設定される。
+なので `veth1_"$uuid"` に MAC アドレス `02:42:ac:11:000:32` が設定される。
 [Change network mac address using &quot;ip&quot; command](https://askubuntu.com/questions/1065871/change-network-mac-address-using-ip-command)
 
 ---
@@ -223,7 +227,7 @@ $ echo 10.0.0."$ip"/24
 10.0.0.32/24
 ```
 
-なので `veth1_"$uuid"` にIPアドレス `10.0.0.32/24` が設定される。
+なので `veth1_"$uuid"` に IP アドレス `10.0.0.32/24` が設定される。
 
 ---
 
@@ -252,11 +256,11 @@ ip route add default via 10.0.0.1
 ```
 
 `10.0.0.1` をデフォルトゲートウェイとして使用する。
-[ipコマンド - Qiita](https://qiita.com/tukiyo3/items/ffd286684a1c954396af)
+[ip コマンド - Qiita](https://qiita.com/tukiyo3/items/ffd286684a1c954396af)
 
 **`10.0.0.1` ってなに?**
 
-参考: [Dockerのネットワークの仕組み - sagantaf](http://sagantaf.hatenablog.com/entry/2019/12/18/234553#%E3%82%B3%E3%83%B3%E3%83%86%E3%83%8A%E3%82%92%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%A6%E3%83%9B%E3%82%B9%E3%83%88%E3%81%AE%E3%83%8D%E3%83%83%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF%E6%A7%8B%E6%88%90%E3%81%AE%E5%A4%89%E5%8C%96%E3%82%92%E7%A2%BA%E8%AA%8D%E3%81%99%E3%82%8B)
+参考: [Docker のネットワークの仕組み - sagantaf](http://sagantaf.hatenablog.com/entry/2019/12/18/234553#%E3%82%B3%E3%83%B3%E3%83%86%E3%83%8A%E3%82%92%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%A6%E3%83%9B%E3%82%B9%E3%83%88%E3%81%AE%E3%83%8D%E3%83%83%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF%E6%A7%8B%E6%88%90%E3%81%AE%E5%A4%89%E5%8C%96%E3%82%92%E7%A2%BA%E8%AA%8D%E3%81%99%E3%82%8B)
 
 [bocker の README](https://github.com/p8952/bocker)にも書いてあるが、
 
@@ -273,22 +277,23 @@ btrfs subvolume snapshot "$btrfs_path/$1" "$btrfs_path/$uuid" > /dev/null
 
 **そもそも `btrfs` とは…?**
 
-> Btrfsは、フォールトトレランス、管理、データ保護など、企業のストレージ システムでよく見られた障害に対処することを目的に、複数の組織（Oracle, Red Hat, Fujitsu, Intel, SUSE, STRATOなど）によって、開発されたファイルシステム。
+> Btrfs は、フォールトトレランス、管理、データ保護など、企業のストレージ システムでよく見られた障害に対処することを目的に、複数の組織（Oracle, Red Hat, Fujitsu, Intel, SUSE, STRATO など）によって、開発されたファイルシステム。
 
-参考: 
+参考:
+
 - [Btrfs による企業データの保護 | Synology Inc.](https://www.synology.com/ja-jp/dsm/Btrfs)
-- [4.1 Btrfsファイル・システムについて](https://docs.oracle.com/cd/E39368_01/adminsg/ol_about_btrfs.html)
+- [4.1 Btrfs ファイル・システムについて](https://docs.oracle.com/cd/E39368_01/adminsg/ol_about_btrfs.html)
 
 🤔 < cp じゃダメなの?
 
 と思ったが、コピーオンライトなどだ大規模なファイルシステムを効率的に管理するための機能が備わっているみたい。
 （TODO: 詳しく調査）
 
-docker公式にも書いてある [Use the BTRFS storage driver](https://docs.docker.com/storage/storagedriver/btrfs-driver/)
+docker 公式にも書いてある [Use the BTRFS storage driver](https://docs.docker.com/storage/storagedriver/btrfs-driver/)
 
 ひとまず[Btrfs を練習してみた - Qiita](https://qiita.com/masataka55/items/0ee9254ad9d0cf6b457a)に書いてある手順に従って動かしてみる。
 
-=> うまくいかなかったのでbtrfsを使用したイメージである[LiVanych/stretch64-btrfs Vagrant box - Vagrant Cloud by HashiCorp](https://app.vagrantup.com/LiVanych/boxes/stretch64-btrfs)を使用することに。
+=> うまくいかなかったので btrfs を使用したイメージである[LiVanych/stretch64-btrfs Vagrant box - Vagrant Cloud by HashiCorp](https://app.vagrantup.com/LiVanych/boxes/stretch64-btrfs)を使用することに。
 
 ```
 mkdir vagrant
@@ -340,17 +345,17 @@ echo 'nameserver 8.8.8.8' > "$btrfs_path/$uuid"/etc/resolv.conf
 `/etc/resolv.conf` とは…?
 
 - [/etc/resolv.conf について - Qiita](https://qiita.com/kasei-san/items/137b7fc86a0eacd60765)
-- [Linux初心者の基礎知識 - /etc/resolv.conf -](http://www.linux-beginner.com/linux_setei2.html)
+- [Linux 初心者の基礎知識 - /etc/resolv.conf -](http://www.linux-beginner.com/linux_setei2.html)
 
-> 「/etc/resolv.conf」は、自分のマシンが利用するDNSサーバの情報（IPアドレス）を記述するファイルである。
+> 「/etc/resolv.conf」は、自分のマシンが利用する DNS サーバの情報（IP アドレス）を記述するファイルである。
 
-ふむふむ。つまり IPアドレスが `8.8.8.8` のDNSサーバを名前解決に使用すると…
+ふむふむ。つまり IP アドレスが `8.8.8.8` の DNS サーバを名前解決に使用すると…
 
 `8.8.8.8` とは（いままでなんとなく使ってた。）?
 
 [Google Public DNS - Wikipedia](https://ja.wikipedia.org/wiki/Google_Public_DNS)
 
-> Google Public DNS（グーグル・パブリック・ディーエヌエス）は、Googleが世界中のインターネット利用者に提供している無料のDNSサービスである。
+> Google Public DNS（グーグル・パブリック・ディーエヌエス）は、Google が世界中のインターネット利用者に提供している無料の DNS サービスである。
 
 ナルホド。
 
@@ -385,20 +390,20 @@ cgcreate -g "cpu,cpuacct,memory:/$uuid"
 
 `cpu,cpuacct,memory` とは…?
 
-[cgroupsを利用したリソースコントロール(RHEL7) - Qiita](https://qiita.com/legitwhiz/items/72ead813f5be784534e5#cgroups%E3%81%A8%E3%81%AF)
+[cgroups を利用したリソースコントロール(RHEL7) - Qiita](https://qiita.com/legitwhiz/items/72ead813f5be784534e5#cgroups%E3%81%A8%E3%81%AF)
 
-> cgroups(Control Groups)とは、「プロセスをグループ化して、リソースの利用をコントロール」するカーネル機能で、Linux 2.6.24からマージされています。
-> cgroupsそのものはプロセスを「コントロールグループ」と呼ばれる単位にまとめるだけで、リソースコントロールを行うにはコントロールグループに「サブシステム」と呼ばれる抽象化されたリソース群をつなげる必要があります。
+> cgroups(Control Groups)とは、「プロセスをグループ化して、リソースの利用をコントロール」するカーネル機能で、Linux 2.6.24 からマージされています。
+> cgroups そのものはプロセスを「コントロールグループ」と呼ばれる単位にまとめるだけで、リソースコントロールを行うにはコントロールグループに「サブシステム」と呼ばれる抽象化されたリソース群をつなげる必要があります。
 
 今回使用しているサブシステムが
 
-- `cpu`: CPUへのアクセス
-- `cpuacct`: CPUについての自動レポートを生成
+- `cpu`: CPU へのアクセス
+- `cpuacct`: CPU についての自動レポートを生成
 - `memory`: メモリに対する制限設定とメモリリソースについての自動レポートの生成
 
 その他のサブシステムは上記リンクを参照してください。
 
-なので、**CPU・CPUについての自動レポート・メモリを対象とした `$uuid` という名前のコントロールグループを作成した**ということらしい。
+なので、**CPU・CPU についての自動レポート・メモリを対象とした `$uuid` という名前のコントロールグループを作成した**ということらしい。
 
 （TODO: `cpuacct` について調べる（なんで必要かわかってない））
 
@@ -430,14 +435,14 @@ cgset -r cpu.shares="$BOCKER_CPU_SHARE" "$uuid"
 
 は、コントロールグループ `$uuid` のリソースを `r` オプションで制限している。
 
-今回は `cpu.shares` なのでCPUの割り当てる割合を指定できるよう(デフォルトは `1024` らしい)
+今回は `cpu.shares` なので CPU の割り当てる割合を指定できるよう(デフォルトは `1024` らしい)
 
 （TODO: ^資料がほとんどヒットしなかったので後で要調査）
 
 - [cgset(1) — cgroup-tools — Debian buster — Debian Manpages](https://manpages.debian.org/buster/cgroup-tools/cgset.1.en.html)
-- [cgroupsを利用したリソースコントロール(RHEL7) - Qiita](https://qiita.com/legitwhiz/items/72ead813f5be784534e5#%E5%88%B6%E9%99%90%E5%80%A4%E3%82%92%E8%A8%AD%E5%AE%9A)
+- [cgroups を利用したリソースコントロール(RHEL7) - Qiita](https://qiita.com/legitwhiz/items/72ead813f5be784534e5#%E5%88%B6%E9%99%90%E5%80%A4%E3%82%92%E8%A8%AD%E5%AE%9A)
   - `cpu.shares` ではなく `cpu.dfs_quota_us` を使ってる?
-- [いますぐ実践! Linuxシステム管理](http://www.usupi.org/sysad/229.html)
+- [いますぐ実践! Linux システム管理](http://www.usupi.org/sysad/229.html)
   - `cpu.shares` に言及していた記事（ソースはわからん…）
 
 ---
@@ -501,7 +506,7 @@ TODO: proc filesystem について調べる。
 
 - `f`: fork する
   - TODO: fork しなかったときの挙動を確認
-  - [chrootとunshareを使い、シェル上でコマンド7つで簡易コンテナ - へにゃぺんて＠日々勉強のまとめ](https://yohgami.hateblo.jp/entry/20161215/1481755818)
+  - [chroot と unshare を使い、シェル上でコマンド 7 つで簡易コンテナ - へにゃぺんて＠日々勉強のまとめ](https://yohgami.hateblo.jp/entry/20161215/1481755818)
 - `m`: mount namespace の分離
 - `u`: UTS namespace の分離
   - TODO: 調査
@@ -546,14 +551,14 @@ chroot directory [ command [ args ]...]
 
 `c` オプションはシェルの入力として文字列を渡して解釈させるものなので、`sh` で以下のコマンドが実行される。
 
-[sh(1) manページ](https://nxmnpg.lemoda.net/ja/1/sh#6)
+[sh(1) man ページ](https://nxmnpg.lemoda.net/ja/1/sh#6)
 
 ```sh
 /bin/mount -t proc proc /proc && $cmd
 ```
 
 - [mount(8): mount filesystem - Linux man page](https://linux.die.net/man/8/mount)
-- [【 mount 】コマンド――ファイルシステムをマウントする：Linux基本コマンドTips（183） - ＠IT](https://www.atmarkit.co.jp/ait/articles/1802/15/news035.html)
+- [【 mount 】コマンド――ファイルシステムをマウントする：Linux 基本コマンド Tips（183） - ＠IT](https://www.atmarkit.co.jp/ait/articles/1802/15/news035.html)
 
 `t` オプションはマウントするファイルシステムの種類を指定するらしいので `proc filesystem` を指定しているようだが…
 
@@ -573,7 +578,7 @@ TODO: 上とかぶるが、 `proc filesystem` を調べる。
 
 `tee` コマンドは標準出力とファイルのどちらにも出力する。
 
-[【 tee 】コマンド――標準出力とファイルの両方に出力する：Linux基本コマンドTips（65） - ＠IT](https://www.atmarkit.co.jp/ait/articles/1611/16/news022.html#:~:text=tee%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%A8%E3%81%AF%EF%BC%9F,%E3%81%99%E3%82%8B%E3%81%93%E3%81%A8%E3%81%8C%E3%81%A7%E3%81%8D%E3%81%BE%E3%81%99%E3%80%82)
+[【 tee 】コマンド――標準出力とファイルの両方に出力する：Linux 基本コマンド Tips（65） - ＠IT](https://www.atmarkit.co.jp/ait/articles/1611/16/news022.html#:~:text=tee%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%A8%E3%81%AF%EF%BC%9F,%E3%81%99%E3%82%8B%E3%81%93%E3%81%A8%E3%81%8C%E3%81%A7%E3%81%8D%E3%81%BE%E3%81%99%E3%80%82)
 
 末尾の `|| true` は `/bin/sh` がエラー終了した場合にスクリプト自体が終了しないために返り値(?)を上書きしている。
 
