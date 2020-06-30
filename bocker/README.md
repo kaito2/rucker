@@ -4,7 +4,8 @@
 
 ## 参考になる記事
 
-- [【連載】世界一わかりみが深いコンテナ & Docker 入門 〜 その 5:Docker のネットワークってどうなってるの？ 〜 \| SIOS Tech. Lab](https://tech-lab.sios.jp/archives/20179) - ネームスペースとか仮想 NIC とかをわかりやすい解説している
+- [【連載】世界一わかりみが深いコンテナ & Docker 入門 〜 その 5:Docker のネットワークってどうなってるの？ 〜 \| SIOS Tech. Lab](https://tech-lab.sios.jp/archives/20179)
+  - ネームスペースや仮想 NIC などをわかりやすく解説している
 
 ## `bocker_run`
 
@@ -597,7 +598,6 @@ ip netns del netns_"$uuid"
 
 以上でコンテナのライフサイクルが終了!! 長かった!!!
 
-
 ## bocker_pull
 
 ```bash
@@ -642,7 +642,7 @@ curl -sL -o /dev/null -D- -H 'X-Docker-Token: true' "https://index.docker.io/v1/
 
 … と思ったらこの docker hub の REST API v1 は deprecated になっていた…
 
-修正のPRを出している人がいたのでコレをベースに解読していく。
+修正の PR を出している人がいたのでコレをベースに解読していく。
 
 [Fix image pulling by huazhihao · Pull Request #27 · p8952/bocker · GitHub](https://github.com/p8952/bocker/pull/27/files)
 
