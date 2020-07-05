@@ -8,3 +8,7 @@ version = "0.1.0"
 
 [dependencies]
 network_bridge = "0.1.1"
+ipnetwork = "0.16.0"
+rtnetlink = "0.3.0"
+tokio = { version = "0.2.21", features = ["full"]}
+futures = "0.3.5"

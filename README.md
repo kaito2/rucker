@@ -55,6 +55,14 @@ bocker では vagrant のプロビジョニングのタイミングで bridge(`b
 
 ## ひとまずネットワーク周りの初期化を実装
 
+bocker の該当コマンド
+
+```bash
+ip link add bridge0 type bridge
+ip addr add 10.0.0.1/24 dev bridge0
+ip link set bridge0 up
+```
+
 gocker のコメント
 
 ```
@@ -111,3 +119,5 @@ rucker0 is created!
 ```
 ip link delete rucker0 type bridge
 ```
+
+ip アドレスを付与するコマンドがこのライブラリにはない…
