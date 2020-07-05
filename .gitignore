@@ -13,3 +13,7 @@
 *.box
 
 # End of https://www.toptal.com/developers/gitignore/api/vagrant
+
+#Added by cargo
+
+/target
