@@ -32,6 +32,10 @@ SCRIPT
 
 Vagrant.configure(2) do |config|
 	config.vm.box = 'puppetlabs/centos-7.0-64-nocm'
+	config.vm.provider "virtualbox" do |v|
+		v.memory = 2048
+		v.cpus = 2
+	end
 	config.ssh.username = 'root'
 	config.ssh.password = 'puppet'
 	config.ssh.insert_key = 'true'
