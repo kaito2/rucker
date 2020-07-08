@@ -18,3 +18,21 @@ Nginx や Node.js ではこの問題を解決するために、1 つのスレッ
 初耳
 
 しかし、この方式は実行権限の譲渡（管理?）がとても難しい。（実際 Node.js の実装もかなり複雑らしい）
+
+> `Stream` とは「任意個のデータを非同期に扱うオブジェクト」で、言わば「非同期版 `Iterator`」です。 `Stream` には `next` メソッドが含まれており、 これを使うと「次のアイテムを取得する `Future`」を取得できます。
+
+なるほど **非同期版 `Iterator`」** わかりやすい
+
+```rust
+async fn stream_example() {
+    let cursor = Cursor::new(b"lorem\nipsum\r\ndolor");
+
+    // linesはStreamを実装した型
+    let mut lines = cursor.lines();
+    // lines.next()はFuture<Output=Option<Result<String, Error>>>を返す
+    while let Some(line) = lines.next().await {
+        let line = line.unwrap();
+        println!("{}", line);
+    }
+}
+```

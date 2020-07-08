@@ -121,3 +121,11 @@ ip link delete rucker0 type bridge
 ```
 
 ip アドレスを付与するコマンドがこのライブラリにはない…
+
+ので async を勉強して `rtnetlink` ライブラリを使用することにします。
+
+[memo/async.md](memo/async.md)
+
+ひとまず bridge を作って IP アドレスを付与するところまでは来たが、そろそろテストが書きたくなってきた。
+
+[r/rust - How should I test my networking code?](https://www.reddit.com/r/rust/comments/8u0dk5/how_should_i_test_my_networking_code/)
