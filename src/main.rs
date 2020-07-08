@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let link_name = bridge_name;
-    let ip_str = "172.29.0.1";
+    let ip_str = "172.29.0.1/16";
     let ip: IpNetwork = ip_str.parse().unwrap_or_else(|_| {
         eprintln!("invalid address");
         std::process::exit(1);
@@ -30,8 +30,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Err(e) = add_address(link_name, ip, handle.clone()).await {
             eprintln!("{}", e);
         }
+        // TODO: `ip link set rucker up` ?
         Ok(())
     })
+}
+
+fn create_container_id() -> String {
+    // TODO: implement
+    String::from("THIS_IS_PLACEHOLDER_CONTAINER_ID")
+}
+
+fn init_container() {
+    let contianer_id = create_container_id();
+    println!("New container ID: {}\n", contianer_id);
+    // TODO: implement image related processes
+}
+
+fn prepare_and_execute_container(
+    mem: i32,
+    swap: i32,
+    pids: i32,
+    cpus: f64,
+    container_id: &str,
+    image_sha_hex: &str,
+    cmd_args: Vec<&str>,
+) {
+    /* Setup the network namespace */
 }
 
 async fn add_address(link_name: &str, ip: IpNetwork, handle: Handle) -> Result<(), Error> {
