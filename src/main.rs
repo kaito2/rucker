@@ -5,6 +5,8 @@ use ipnetwork::IpNetwork;
 use rtnetlink::{new_connection, Error, Handle};
 use tokio;
 
+mod mount;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bridge_name = "rucker0";
     let bridge = BridgeBuilder::new(bridge_name).build();
