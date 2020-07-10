@@ -31,13 +31,13 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y
 SCRIPT
 
 Vagrant.configure(2) do |config|
-	config.vm.box = 'puppetlabs/centos-7.0-64-nocm'
+	config.vm.box = "bento/ubuntu-20.04"
 	config.vm.provider "virtualbox" do |v|
 		v.memory = 2048
 		v.cpus = 2
 	end
 	config.ssh.username = 'root'
-	config.ssh.password = 'puppet'
+	config.ssh.password = 'ubuntu'
 	config.ssh.insert_key = 'true'
-	config.vm.provision 'shell', inline: $script
+	# config.vm.provision 'shell', inline: $script
 end
